@@ -1,6 +1,7 @@
 <?php
 set_time_limit(0);
 error_reporting(0);
+$verbose = false;
 
 function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
     if (!empty($user)) {
@@ -59,8 +60,8 @@ function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
 }
 
 
-function getDirectoryListing($dir,$d=0,$f=0) { // $d and $f for tracking array indices
- global $result;
+function getDirectoryListing($dir) {
+ global $verbose;
  $ctx = stream_context_create(array(
     'http' => array(
         'header'  => "Authorization: Basic " . base64_encode("student:std2013")
@@ -73,6 +74,7 @@ function getDirectoryListing($dir,$d=0,$f=0) { // $d and $f for tracking array i
  	file_put_contents("files.log",urldecode($matchFile).PHP_EOL,FILE_APPEND);
  }
  foreach($m[1] as $match) {
+  if($verbose) echo "[*] Found directory ".urldecode($match).PHP_EOL;
   file_put_contents("dirs.log",urldecode($match).PHP_EOL,FILE_APPEND);
   getDirectoryListing(urldecode($match));
  }
@@ -132,12 +134,12 @@ function downloadFile($fname) {
 }
 
 echo "+--------------------------------------+".PHP_EOL;
-echo "| pietrzak.pw mirror tool ver 15.12.17 |".PHP_EOL;
+echo "| pietrzak.pw mirror tool ver 16.12.17 |".PHP_EOL;
 echo "+--------------------------------------+".PHP_EOL;
 echo PHP_EOL;
 
 if($_SERVER["argc"] <= 1) {
-	echo "usage: php -f ".$_SERVER["argv"][0]." -- <folder name or -r for resume download>".PHP_EOL.
+	echo "usage: php -f ".$_SERVER["argv"][0]." -- <folder name or -r for resume download> [-v|--verbose]".PHP_EOL.
 	     "	examples:".PHP_EOL.
 	     "		php -f ".$_SERVER["argv"][0]." -- Semestr_1 	- download files from Semestr_1".PHP_EOL.
 	     "		php -f ".$_SERVER["argv"][0]." -- -r 		- resume download".PHP_EOL.
@@ -147,8 +149,10 @@ if($_SERVER["argc"] <= 1) {
 
 $startdir = "";
 if($_SERVER["argc"] > 1) $startdir = $_SERVER["argv"][1];
+if($_SERVER["argc"] > 2) 
+    if($_SERVER["argv"][2] == "-v" || $_SERVER["argv"][2] == "--verbose") $verbose = true;
 if($startdir == "-r") {
- if(file_exists("files.log") {
+ if(file_exists("files.log")) {
  	echo "[*] Resuming file download from files.log".PHP_EOL;
  	$filelist = explode(PHP_EOL,trim(file_get_contents("files.log")));
  } else {
