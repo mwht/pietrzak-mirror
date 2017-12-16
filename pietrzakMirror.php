@@ -2,6 +2,9 @@
 set_time_limit(0);
 error_reporting(0);
 $verbose = false;
+$result = array();
+$result["files"] = 0;
+$result["dirs"] = 0;
 
 function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
     if (!empty($user)) {
@@ -61,7 +64,7 @@ function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
 
 
 function getDirectoryListing($dir) {
- global $verbose;
+ global $verbose,$result;
  $ctx = stream_context_create(array(
     'http' => array(
         'header'  => "Authorization: Basic " . base64_encode("student:std2013")
@@ -71,10 +74,12 @@ function getDirectoryListing($dir) {
  preg_match_all("/<a href=\"\?directory=(.*)\" id=\"(.*)\">/",$data,$m);
  preg_match_all("/<a href=\"[^\?](.*)\" id=\"(.*)\">/",$data,$mf);
  foreach($mf[1] as $matchFile) {
+    $result["files"]++;
  	file_put_contents("files.log",urldecode($matchFile).PHP_EOL,FILE_APPEND);
  }
  foreach($m[1] as $match) {
   if($verbose) echo "[*] Found directory ".urldecode($match).PHP_EOL;
+  $result["dirs"]++;
   file_put_contents("dirs.log",urldecode($match).PHP_EOL,FILE_APPEND);
   getDirectoryListing(urldecode($match));
  }
@@ -98,6 +103,26 @@ function progressBar($percent) {
   echo " ";
  }
  echo "] ";
+}
+
+/*
+ * getSizeUnit
+ * gets size in human readable units
+ * param:
+ * * size (integer) - size in bytes
+ * returns:
+ * * stringified version of size in human readable units
+*/
+function getSizeUnit($size) {
+    if($size >= 1024 && $size < 1024*1024) {
+        return round($size/1024,2)." KB";
+    } else if($size >= 1024*1024 && $size < 1024*1024*1024) {
+        return round($size/(1024*1024),2)." MB";
+    } else if($size >= 1024*1024*1024) {
+        return round($size/(1024*1024*1024),2)." GB";
+    } else {
+        return $size." B";
+    }
 }
 
 function downloadFile($fname) {
@@ -125,7 +150,7 @@ function downloadFile($fname) {
 		fwrite($g,$buf);
 		$progress += strlen($buf);
 		progressBar(round(($progress/$fsize)*100.0));
-		echo $progress." B/".$fsize." B (".round(($progress/$fsize)*100.0)."%)\r";
+		echo getSizeUnit($progress)."/".getSizeUnit($fsize)." (".round(($progress/$fsize)*100.0)."%)    \r";
 	}
 	fclose($f);
 	fflush($g);
@@ -156,7 +181,8 @@ if($startdir == "-r") {
  	echo "[*] Resuming file download from files.log".PHP_EOL;
  	$filelist = explode(PHP_EOL,trim(file_get_contents("files.log")));
  } else {
-	echo "[-] files.log not found".PHP_EOL;
+	echo "[-] files.log not found, exiting.".PHP_EOL;
+	exit;
  }
 } else {
 	if(file_exists("files.log")) unlink("files.log");
@@ -164,7 +190,11 @@ if($startdir == "-r") {
 	echo "[*] Scanning for files and directories, please wait, this might take a while...".PHP_EOL;
 	getDirectoryListing("./".$startdir);
 	if(strlen($startdir) > 0) mkdir("./".$startdir);
-	echo "[*] ".count($result["dirs"])." directories and ".count($result["files"])." files found.".PHP_EOL;
+	echo "[*] ".$result["dirs"]." directories and ".$result["files"]." files found.".PHP_EOL;
+	if($result["dirs"] == 0 || $result["files"] == 0) {
+        echo "[-] Nothing found, exiting.".PHP_EOL;
+        exit;
+	}
 	echo "[*] Creating directories for files...".PHP_EOL;
 	$dirlist = explode(PHP_EOL,trim(file_get_contents("dirs.log")));
 	$filelist = explode(PHP_EOL,trim(file_get_contents("files.log")));
@@ -176,5 +206,5 @@ echo "[*] Beginning file download...".PHP_EOL;
 foreach($filelist as $file) {
 	downloadFile($file);
 }
-echo "[+] Job finished.".PHP_EOL;
+echo PHP_EOL."[+] Job finished.".PHP_EOL;
 ?>
