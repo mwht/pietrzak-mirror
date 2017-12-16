@@ -62,7 +62,14 @@ function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
     }
 }
 
-
+/*
+ * getDirectoryListing
+ * traverse through pietrzak.pw and write down every file and directory available
+ * param:
+ * * dir (string) - directory to traverse
+ * returns:
+ * * result (array) - result count of files. obsolete, done via global variable.
+ */
 function getDirectoryListing($dir) {
  global $verbose,$result;
  $ctx = stream_context_create(array(
@@ -86,10 +93,25 @@ function getDirectoryListing($dir) {
  return $result;
 }
 
+
+/*
+ * realURL
+ * deobfuscate URL, used for downloading file from path acquired from getDirectoryListing.
+ * param:
+ * * url (string) - url itself. duh.
+ * returns:
+ * * URL used to download file
+*/
 function realURL($url) {
 	return str_replace(array("+","%2F"),array("%20","/"),urlencode($url)); // TODO: optimize me
 }
 
+/*
+ * progressBar
+ * print progress bar with given percent value. pure cosmetics but sometimes helpful
+ * param:
+ * * percent (integer/float) - percent value from 0% to 100%
+ */
 function progressBar($percent) {
  if($percent > 100 || $percent < 0) {
 	echo "[xxxxxxxxxx] ";
@@ -125,6 +147,13 @@ function getSizeUnit($size) {
     }
 }
 
+
+/*
+ * downloadFile
+ * downloads the file itself while printing the status into output.
+ * param:
+ * * fname (string) - file name on pietrzak.pw (http://pietrzak.pw/std/{fname})
+*/
 function downloadFile($fname) {
 	 $ctx = stream_context_create(array(
     	'http' => array(
@@ -164,11 +193,11 @@ echo "+--------------------------------------+".PHP_EOL;
 echo PHP_EOL;
 
 if($_SERVER["argc"] <= 1) {
-	echo "usage: php -f ".$_SERVER["argv"][0]." -- <folder name or -r for resume download> [-v|--verbose]".PHP_EOL.
-	     "	examples:".PHP_EOL.
-	     "		php -f ".$_SERVER["argv"][0]." -- Semestr_1 	- download files from Semestr_1".PHP_EOL.
-	     "		php -f ".$_SERVER["argv"][0]." -- -r 		- resume download".PHP_EOL.
-	     "		php -f ".$_SERVER["argv"][0]." -- .		- full mirror (carefully!)".PHP_EOL.PHP_EOL;
+	echo "usage: php -f ".$_SERVER["argv"][0]." -- <folder name or -r for resume download> [-v|--verbose]".PHP_EOL.PHP_EOL.
+	     "examples:".PHP_EOL.
+	     "	php -f ".$_SERVER["argv"][0]." -- Semestr_1 - download files from Semestr_1".PHP_EOL.
+	     "	php -f ".$_SERVER["argv"][0]." -- -r        - resume download".PHP_EOL.
+	     "	php -f ".$_SERVER["argv"][0]." -- .         - full mirror (carefully!)".PHP_EOL.PHP_EOL;
 	exit;
 }
 
@@ -188,8 +217,13 @@ if($startdir == "-r") {
 	if(file_exists("files.log")) unlink("files.log");
 	if(file_exists("dirs.log")) unlink("dirs.log");
 	echo "[*] Scanning for files and directories, please wait, this might take a while...".PHP_EOL;
-	getDirectoryListing("./".$startdir);
-	if(strlen($startdir) > 0) mkdir("./".$startdir);
+	if($startdir != ".") { 
+        getDirectoryListing("./".$startdir);
+        if(strlen($startdir) > 0) mkdir("./".$startdir); 
+    } else {
+        // we're doing a full mirror here
+        getDirectoryListing(".");
+    } 
 	echo "[*] ".$result["dirs"]." directories and ".$result["files"]." files found.".PHP_EOL;
 	if($result["dirs"] == 0 || $result["files"] == 0) {
         echo "[-] Nothing found, exiting.".PHP_EOL;
