@@ -64,7 +64,7 @@ function get_headers_x($url,$format=0, $user='', $pass='', $referer='') {
 
 /*
  * getDirectoryListing
- * traverse through pietrzak.pw and write down every file and directory available
+ * traverse through pietrzak.pw and log every file and directory available
  * param:
  * * dir (string) - directory to traverse
  * returns:
@@ -203,7 +203,7 @@ if($_SERVER["argc"] <= 1) {
 
 $startdir = "";
 if($_SERVER["argc"] > 1) $startdir = $_SERVER["argv"][1];
-if($_SERVER["argc"] > 2) 
+if($_SERVER["argc"] > 2)
     if($_SERVER["argv"][2] == "-v" || $_SERVER["argv"][2] == "--verbose") $verbose = true;
 if($startdir == "-r") {
  if(file_exists("files.log")) {
@@ -217,13 +217,13 @@ if($startdir == "-r") {
 	if(file_exists("files.log")) unlink("files.log");
 	if(file_exists("dirs.log")) unlink("dirs.log");
 	echo "[*] Scanning for files and directories, please wait, this might take a while...".PHP_EOL;
-	if($startdir != ".") { 
+	if($startdir != ".") {
         getDirectoryListing("./".$startdir);
-        if(strlen($startdir) > 0) mkdir("./".$startdir); 
+        if(strlen($startdir) > 0) mkdir("./".$startdir);
     } else {
         // we're doing a full mirror here
         getDirectoryListing(".");
-    } 
+    }
 	echo "[*] ".$result["dirs"]." directories and ".$result["files"]." files found.".PHP_EOL;
 	if($result["dirs"] == 0 || $result["files"] == 0) {
         echo "[-] Nothing found, exiting.".PHP_EOL;
