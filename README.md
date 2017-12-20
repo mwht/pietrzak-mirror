@@ -7,7 +7,7 @@ small tool for mirroring pietrzak.pw - it's that simple
 # Usage
   * just execute:
 ```
-php -f pietrzakMirror.php -- <i>(name_of_semester_to_copy</i>
+php -f pietrzakMirror.php -- (name_of_semester_to_copy)
 ```
 # Examples
 ```
