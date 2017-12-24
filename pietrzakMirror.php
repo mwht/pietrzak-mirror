@@ -188,7 +188,7 @@ function downloadFile($fname) {
 }
 
 echo "+--------------------------------------+".PHP_EOL;
-echo "| pietrzak.pw mirror tool ver 16.12.17 |".PHP_EOL;
+echo "| pietrzak.pw mirror tool ver 25.12.17 |".PHP_EOL;
 echo "+--------------------------------------+".PHP_EOL;
 echo PHP_EOL;
 
