@@ -209,7 +209,10 @@ if($_SERVER["argc"] > 2)
 if($startdir == "-r") {
  if(file_exists("files.log")) {
  	echo "[*] Resuming file download from files.log".PHP_EOL;
- 	$filelist = explode(PHP_EOL,trim(file_get_contents("files.log")));
+  if(file_exists("progress.log")) {
+    $progress = intval(file_get_contents("progress.log"));
+  }
+ 	$filelist = array_slice(explode(PHP_EOL,trim(file_get_contents("files.log"))),$progress);
  } else {
 	echo "[-] files.log not found, exiting.".PHP_EOL;
 	exit;
@@ -217,6 +220,7 @@ if($startdir == "-r") {
 } else {
 	if(file_exists("files.log")) unlink("files.log");
 	if(file_exists("dirs.log")) unlink("dirs.log");
+  if(file_exists("progress.log")) unlink("progress.log");
 	echo "[*] Scanning for files and directories, please wait, this might take a while...".PHP_EOL;
 	if($startdir != ".") {
         getDirectoryListing("./".$startdir);
@@ -240,7 +244,8 @@ if($startdir == "-r") {
 echo "[*] Beginning file download...".PHP_EOL;
 foreach($filelist as $file) {
 	if(downloadFile($file)) {
-
+    $progress++;
+    file_put_contents("progress.log",intval($progress));
   }
 }
 echo PHP_EOL."[+] Job finished.".PHP_EOL;
