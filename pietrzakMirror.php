@@ -163,12 +163,12 @@ function downloadFile($fname) {
 	$f = fopen("http://pietrzak.pw/std/".realURL(substr($fname,1)),"r",TRUE,$ctx);
 	if(!$f) {
 		echo "[!] Could not download file \"".$fname."\" !".PHP_EOL;
-		return;
+		return false;
 	}
 	$g = fopen(".".$fname,"w");
 	if(!$g) {
 		echo "[!] Could not create file \"".$fname."\" !".PHP_EOL;
-		return;
+		return false;
 	}
 	echo "[*] Downloading file \"".$fname."\" ... ".PHP_EOL;
 	$progress = 0;
@@ -184,7 +184,7 @@ function downloadFile($fname) {
 	fclose($f);
 	fflush($g);
 	fclose($g);
-
+  return true;
 }
 
 echo "+--------------------------------------+".PHP_EOL;
@@ -202,6 +202,7 @@ if($_SERVER["argc"] <= 1) {
 }
 
 $startdir = "";
+$progress = 0;
 if($_SERVER["argc"] > 1) $startdir = $_SERVER["argv"][1];
 if($_SERVER["argc"] > 2)
     if($_SERVER["argv"][2] == "-v" || $_SERVER["argv"][2] == "--verbose") $verbose = true;
@@ -238,7 +239,9 @@ if($startdir == "-r") {
 }
 echo "[*] Beginning file download...".PHP_EOL;
 foreach($filelist as $file) {
-	downloadFile($file);
+	if(downloadFile($file)) {
+
+  }
 }
 echo PHP_EOL."[+] Job finished.".PHP_EOL;
 ?>
