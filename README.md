@@ -1,15 +1,15 @@
 # pietrzak-mirror
 small tool for mirroring pietrzak.pw - it's that simple
 
-# Requirements
+## Requirements
   * PHP >= 7.0
 
-# Usage
+## Usage
   * just execute:
 ```
 php -f pietrzakMirror.php -- (name_of_semester_to_copy)
 ```
-# Examples
+## Examples
 ```
 php -f pietrzakMirror.php -- Semestr_1 - download Semestr_1
 ```
